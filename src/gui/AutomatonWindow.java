@@ -10,150 +10,263 @@
 package gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.IOException;
 
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import automaton.PushDownAutomaton;
+import exceptions.AutomatonExceptionHandler;
+import handlers.AutomatonFileHandler;
 
 public class AutomatonWindow extends JFrame {
-	PushDownAutomaton automaton;
-	JTextField textField;
-	JButton button;
-	JButton chooseFileButton = new JButton("Choose file...");
-	JPanel panel;
-	JPanel textPanel;
-	JPanel filePanel;
-	JPanel modePanel;
-	JPanel inputPanel;
-	JLabel loadFileLabel = new JLabel("Load File...");
-	JLabel modeLabel = new JLabel("Mode:");
-	JLabel inputStringLabel = new JLabel("Input String:");
-	JLabel stackText = new JLabel("Stack:");
-	JLabel stateText = new JLabel("State:");
-	JLabel previousStateText = new JLabel("Previous State:");
-	JLabel nextStateText = new JLabel("Next State:");
-	JLabel inputTapeText = new JLabel("Input tape:");
-	JPanel topPanel = new JPanel(new GridLayout(1,3));
-	JPanel topInputPanel = new JPanel(new GridLayout(2,1));
-	JPanel topInputString = new JPanel(new FlowLayout());
-	AutomatonAcceptedPanel automatonAcceptedPanel;
-	Boolean accepted;
+  public final static String INFO_ICON_PATH = "res/info-image-16.png";
+  public final static ImageIcon infoIcon = new ImageIcon(INFO_ICON_PATH);
+  public final static String AUTOMATA_ICON_PATH = "res/automata-icon.png";
+  public final static ImageIcon icon = new ImageIcon(AUTOMATA_ICON_PATH);
 
-	public AutomatonWindow(PushDownAutomaton automaton) {
-		setAutomaton(automaton);
-		setLayout(new BorderLayout());
-		setPanel(new JPanel(new GridLayout(2, 1)));
-		setTextPanel(new JPanel(new GridLayout(2, 1)));
-		setTextField(new JTextField());
-		getTextField().setPreferredSize( new Dimension( 100, 24 ) );
-		setAcceptedPanel(new AutomatonAcceptedPanel());
-		setButton(new JButton("Comprobar"));
+  PushDownAutomaton automaton;
+  JTextField textField;
+  JButton button;
+  JButton checkButton = new JButton("Check");
+  JButton resetButton = new JButton("Reset");
+  JButton initializeButton = new JButton("Initialize");
+  JButton chooseFileButton = new JButton("Load automata from file...");
+  JPanel panel;
+  JPanel textPanel;
+  JPanel filePanel;
+  JPanel modePanel;
+  JPanel inputPanel;
+  boolean automataMode = false;                           // False: Normal, True: Step by step
+  private JLabel infoLabel;                               // The label for the information icon
+  JLabel loadFileLabel = new JLabel("Load File...");
+  JFileChooser jFileChooser = new JFileChooser();
+  JLabel modeLabel = new JLabel("Mode:");
+  String[] possibleModes = { "Normal", "Step by step" };
+  JComboBox modeComboBox = new JComboBox(possibleModes);
+  JLabel inputStringLabel = new JLabel("Input String:");
+  JLabel stackText = new CustomLabel("AUTOMATA STACK", true);
+  JLabel stateText = new CustomLabel("State: ", true);
+  JLabel stateValue = new JLabel("?");
+  JLabel previousStateText = new CustomLabel("| Previous State: ", true);
+  JLabel previousStateValue = new JLabel("?");
+  JLabel nextStateText = new CustomLabel("| Next State: ", true);
+  JLabel nextStateValue = new JLabel("?");
+  JLabel statusText = new CustomLabel("| Status: ", true);
+  JLabel inputTapeText = new CustomLabel("Input tape:", true);
+  JLabel inputTapeValue = new JLabel("?");
+  JPanel topPanel = new JPanel(new GridLayout(1,3));
+  JPanel topInputPanel = new JPanel(new GridLayout(2,1));
+  JPanel topInputString = new JPanel(new FlowLayout());
+  JPanel topModePanel = new JPanel(new FlowLayout());
+  JPanel topChooseFilePanel = new JPanel(new FlowLayout());
+  // Bottom part (State + Previous state + Next state + Input tape)
+  JPanel bottomPanel = new JPanel(new GridLayout(2,1));
+  JPanel bottomStatePanel = new JPanel(new FlowLayout());
+  JPanel bottomInputTapePanel = new JPanel(new FlowLayout());
+  //
+  // Center part (Transitions (center) + Stack (right)
+  JPanel centerPanel = new JPanel(new BorderLayout());
+  JPanel transitionsPanel = new JPanel(new GridLayout(0,1));
+  JPanel stackPanel = new JPanel(new BorderLayout());
+  JPanel stackPanelElements = new JPanel(new GridLayout(0,1));
+  //
+  AutomatonAcceptedPanel automatonAcceptedPanel;
+  Boolean accepted;
 
-		//getPanel().add(getTextField());
-		//getPanel().add(getButton());
-		//getTextPanel().add(getPanel());
+  public AutomatonWindow(PushDownAutomaton automaton) {
+    setAutomaton(automaton);
+    setLayout(new BorderLayout());
+    setPanel(new JPanel(new GridLayout(2, 1)));
+    setTextPanel(new JPanel(new GridLayout(2, 1)));
+    setTextField(new JTextField());
+    getTextField().setPreferredSize( new Dimension( 60, 24 ) );
+    setAcceptedPanel(new AutomatonAcceptedPanel());
+    getAcceptedPanel().setPreferredSize( new Dimension( 60, 24 ) );
+    setButton(checkButton);
+    jFileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+    FileNameExtensionFilter filter = new FileNameExtensionFilter("PA Pushdown Automata File", "pa");
+    jFileChooser.setFileFilter(filter);
 
-		getTextPanel().add(getAcceptedPanel());
-		
-		//
-		topPanel.add(chooseFileButton);
-		topPanel.add(modeLabel);
-		topInputString.add(inputStringLabel);
-		topInputString.add(getTextField());
-		topInputPanel.add(topInputString);
-		topInputPanel.add(getButton());
-		topPanel.add(topInputPanel);
-		//
+    // Top part
+    // The info icon
+    infoLabel = new JLabel(infoIcon);
+    infoLabel.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        final String INFORMATION_TEXT = "Subject: Complejidad Computacional\nAssignment: Pushdown Automaton (1)\nDescription: App that simulates a Pushdown Automaton\nVersion: 0.0.1\nAuthor: Adrian Rodriguez Bazaga\nEmail: arodriba@ull.es\n\nSTATUS COLORS:\nGreen: Accepted\nRed: Rejected\nOrange: Unknown";
+        JOptionPane.showMessageDialog(null, INFORMATION_TEXT);
+      }
+    });
+    //
+    topChooseFilePanel.add(infoLabel);
+    topChooseFilePanel.add(chooseFileButton);
+    topPanel.add(topChooseFilePanel);
+    topModePanel.add(modeLabel);
+    topModePanel.add(modeComboBox);
+    topPanel.add(topModePanel);
+    topInputString.add(inputStringLabel);
+    topInputString.add(getTextField());
+    topInputPanel.add(topInputString);
+    topInputPanel.add(getButton());
+    topPanel.add(topInputPanel);
+    //
 
-		chooseFileButton.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				FileChooserWindow fileChooserWindow  = new FileChooserWindow();
-				fileChooserWindow.setVisible(true);
-			}
-		});
-		
-		getButton().addActionListener(new ActionListener() {
+    // Bottom part
+    bottomInputTapePanel.add(inputTapeText);
+    bottomInputTapePanel.add(inputTapeValue);
+    bottomStatePanel.add(resetButton);
+    bottomStatePanel.add(initializeButton);
+    bottomStatePanel.add(getButton());
+    bottomStatePanel.add(stateText);
+    bottomStatePanel.add(stateValue);
+    bottomStatePanel.add(previousStateText);
+    bottomStatePanel.add(previousStateValue);
+    bottomStatePanel.add(nextStateText);
+    bottomStatePanel.add(nextStateValue);
+    bottomStatePanel.add(statusText);
+    bottomStatePanel.add(getAcceptedPanel());
+    bottomPanel.add(bottomInputTapePanel);
+    bottomPanel.add(bottomStatePanel);
+    //
 
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String text = getTextField().getText();
+    // Center part
+    stackText.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    stackPanelElements.add(stackText);
+    stackPanelElements.add(new CustomLabel("SSSBB", Color.RED, false));
+    stackPanel.add(stackPanelElements, BorderLayout.NORTH);
+    stackPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    transitionsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+    centerPanel.add(transitionsPanel, BorderLayout.CENTER);
+    centerPanel.add(stackPanel, BorderLayout.EAST);
+    //
 
-				getAutomaton().setInputString(text);
-				accepted = getAutomaton().evaluateEntry();
-				getAcceptedPanel().setAccepted(accepted);
-				repaint();
-			}
-		});
-		this.add(topPanel, BorderLayout.NORTH);
-		this.add(getAcceptedPanel(), BorderLayout.CENTER);
-	}
+    chooseFileButton.addActionListener(new ActionListener() {
 
-	public PushDownAutomaton getAutomaton() {
-		return automaton;
-	}
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        //FileChooserWindow fileChooserWindow  = new FileChooserWindow();
+        //fileChooserWindow.setVisible(true);
+        int result = jFileChooser.showOpenDialog(new JFrame());
+        if (result == JFileChooser.APPROVE_OPTION) {
+          File selectedFile = jFileChooser.getSelectedFile();
+          System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+          try {
+            setAutomaton(AutomatonFileHandler.parseFromFile(selectedFile.getAbsolutePath()));
+          } catch (IOException | AutomatonExceptionHandler exception) {
+            // TODO Auto-generated catch block
+            exception.printStackTrace();
+            return;
+          }
+        }
 
-	public void setAutomaton(PushDownAutomaton automaton) {
-		this.automaton = automaton;
-	}
+      }
+    });
 
-	public JPanel getPanel() {
-		return panel;
-	}
+    modeComboBox.addActionListener(new ActionListener() {
 
-	public void setPanel(JPanel panel) {
-		this.panel = panel;
-	}
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        JComboBox cb = (JComboBox)e.getSource();
+        String chosenOption = (String)cb.getSelectedItem();
+        if(chosenOption.equals("Normal")) {
+          checkButton.setText("Check");
+        } else {
+          checkButton.setText("Next step");
+        }
+      }
+    });
 
-	public JTextField getTextField() {
-		return textField;
-	}
+    getButton().addActionListener(new ActionListener() {
 
-	public void setTextField(JTextField textField) {
-		this.textField = textField;
-	}
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        String text = getTextField().getText();
 
-	public JButton getButton() {
-		return button;
-	}
+        getAutomaton().setInputString(text);
+        accepted = getAutomaton().evaluateEntry();
+        getAcceptedPanel().setAccepted(accepted);
+        repaint();
+      }
+    });
+    this.add(topPanel, BorderLayout.NORTH);
+    this.add(centerPanel, BorderLayout.CENTER);
+    this.add(bottomPanel, BorderLayout.SOUTH);
+    setIconImage(icon.getImage());
+  }
 
-	public void setButton(JButton button) {
-		this.button = button;
-	}
+  public PushDownAutomaton getAutomaton() {
+    return automaton;
+  }
 
-	public JPanel getTextPanel() {
-		return textPanel;
-	}
+  public void setAutomaton(PushDownAutomaton automaton) {
+    this.automaton = automaton;
+  }
 
-	public void setTextPanel(JPanel textPanel) {
-		this.textPanel = textPanel;
-	}
+  public JPanel getPanel() {
+    return panel;
+  }
 
-	public AutomatonAcceptedPanel getAcceptedPanel() {
-		return automatonAcceptedPanel;
-	}
+  public void setPanel(JPanel panel) {
+    this.panel = panel;
+  }
 
-	public void setAcceptedPanel(AutomatonAcceptedPanel automatonAcceptedPanel) {
-		this.automatonAcceptedPanel = automatonAcceptedPanel;
-	}
+  public JTextField getTextField() {
+    return textField;
+  }
 
-	public Boolean getAccepted() {
-		return accepted;
-	}
+  public void setTextField(JTextField textField) {
+    this.textField = textField;
+  }
 
-	public void setAccepted(Boolean accepted) {
-		this.accepted = accepted;
-	}
+  public JButton getButton() {
+    return button;
+  }
+
+  public void setButton(JButton button) {
+    this.button = button;
+  }
+
+  public JPanel getTextPanel() {
+    return textPanel;
+  }
+
+  public void setTextPanel(JPanel textPanel) {
+    this.textPanel = textPanel;
+  }
+
+  public AutomatonAcceptedPanel getAcceptedPanel() {
+    return automatonAcceptedPanel;
+  }
+
+  public void setAcceptedPanel(AutomatonAcceptedPanel automatonAcceptedPanel) {
+    this.automatonAcceptedPanel = automatonAcceptedPanel;
+  }
+
+  public Boolean getAccepted() {
+    return accepted;
+  }
+
+  public void setAccepted(Boolean accepted) {
+    this.accepted = accepted;
+  }
 
 
 }

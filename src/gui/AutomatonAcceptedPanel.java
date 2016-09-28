@@ -28,6 +28,9 @@ public class AutomatonAcceptedPanel extends JPanel {
 			else
 				g.setColor(Color.RED);
 			g.fillRect(0, 0, getWidth(), getHeight());
+		} else {
+		  g.setColor(Color.ORANGE);
+		  g.fillRect(0, 0, getWidth(), getHeight());
 		}
 	}
 	public Boolean getAccepted() {

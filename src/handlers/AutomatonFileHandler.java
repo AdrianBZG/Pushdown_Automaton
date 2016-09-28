@@ -31,7 +31,7 @@ public class AutomatonFileHandler {
 	 * @throws IOException
 	 * @throws AutomatonExceptionHandler
 	 */
-	public static PushDownAutomaton parseFromFile(String filename)throws IOException, AutomatonExceptionHandler {
+	public static PushDownAutomaton parseFromFile(String filename) throws IOException, AutomatonExceptionHandler {
 		setAutomaton(new PushDownAutomaton());
 		
 		Scanner scanner = null;
