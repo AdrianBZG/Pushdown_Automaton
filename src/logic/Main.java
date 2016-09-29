@@ -28,17 +28,16 @@ public class Main {
       public void run() {
         PushDownAutomaton automaton = null;
         AutomatonWindow frame; 
-        if (args.length < 1)
+        /*if (args.length < 1)
           System.err.println("Se debe pasar por parametro el archivo a leer");
-
-        try {
-          automaton = AutomatonFileHandler.parseFromFile("automaton_examples/" + args[0]);
+		*/
+        //try {
+          //automaton = AutomatonFileHandler.parseFromFile("automaton_examples/" + args[0]);
           frame  = new AutomatonWindow(automaton);
-        } catch (IOException | AutomatonExceptionHandler e) {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-          return;
-        }
+        //} /*catch (IOException | AutomatonExceptionHandler e) {
+          //e.printStackTrace();
+          //return;
+        //}
 
         frame.setTitle("Pushdown Automaton");
         frame.setSize(800, 600);

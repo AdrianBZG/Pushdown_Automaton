@@ -56,7 +56,7 @@ public class PushDownAutomaton extends Automaton {
 		this.setStackAlphabet(other.getStackAlphabet());
 		this.startingStackSymbol = (other.getStartingStackSymbol());
 		this.startingState = (other.getStartingState());
-		this.setStack((AutomatonStack)other.getStack().clone());					/// Verificar si el clone está realmente implementado.
+		this.setStack((AutomatonStack)other.getStack().clone());					/// Verificar si el clone estï¿½ realmente implementado.
 		this.setInputStringAlphabet(other.getInputStringAlphabet());
 		
 		if (!transitionToApply.getCharacterToRead().equals(EPSYLON)) {
@@ -89,9 +89,10 @@ public class PushDownAutomaton extends Automaton {
 			for (int j = 0; j < possibleTransitions.size(); j++){
 				PushDownAutomaton newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
 			
-				if (newAutomaton.evaluateEntry())
+				if (newAutomaton.evaluateEntry()) {
 				  setStepByStepAutomaton(newAutomaton);
-					return true;
+				  return true;
+				}
 			}
 		}
 			
@@ -204,7 +205,7 @@ public class PushDownAutomaton extends Automaton {
 	}
 	
 	/**
-	 * Añade un nuevo elemento al alfabeto tau.
+	 * Aï¿½ade un nuevo elemento al alfabeto tau.
 	 * @param newElement
 	 */
 	public void addElementToStackAlphabet(String newElement) {
@@ -215,7 +216,7 @@ public class PushDownAutomaton extends Automaton {
 	}
 	
 	/**
-	 * Añade una nueva transicion.
+	 * Aï¿½ade una nueva transicion.
 	 * @param origin
 	 * @param entryToConsume
 	 * @param stackSymbolToConsume
