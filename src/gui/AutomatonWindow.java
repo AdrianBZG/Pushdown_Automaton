@@ -216,8 +216,8 @@ public class AutomatonWindow extends JFrame {
           if(text.length() > 0) { 
             getAutomaton().setInputString(text);
             updateInputTapeValue(text);
-            stackPanelElements.add(new CustomLabel(automaton.getStartingStackSymbol(), Color.RED, false));
-            stateValue.setText(automaton.getStartingState());
+            stackPanelElements.add(new CustomLabel(getAutomaton().getStartingStackSymbol(), Color.RED, false));
+            stateValue.setText(getAutomaton().getStartingState());
           } else {
             JOptionPane.showMessageDialog(null, "ERROR: The Input String can't be empty!");
           }
