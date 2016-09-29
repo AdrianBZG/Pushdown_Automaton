@@ -61,15 +61,13 @@ public class AutomatonWindow extends JFrame {
   JFileChooser jFileChooser = new JFileChooser();
   JLabel modeLabel = new JLabel("Mode:");
   String[] possibleModes = { "Normal", "Step by step" };
-  JComboBox modeComboBox = new JComboBox(possibleModes);
+  JComboBox<String> modeComboBox = new JComboBox<String>(possibleModes);
   JLabel inputStringLabel = new JLabel("Input String:");
-  JLabel stackText = new CustomLabel("AUTOMATA STACK", true);
+  JLabel stackText = new CustomLabel("AUTOMATON STACK", true);
   JLabel stateText = new CustomLabel("State: ", true);
   JLabel stateValue = new JLabel("?");
   JLabel previousStateText = new CustomLabel("| Previous State: ", true);
   JLabel previousStateValue = new JLabel("?");
-  JLabel nextStateText = new CustomLabel("| Next State: ", true);
-  JLabel nextStateValue = new JLabel("?");
   JLabel statusText = new CustomLabel("| Status: ", true);
   JLabel inputTapeText = new CustomLabel("Input tape:", true);
   JLabel inputTapeValue = new JLabel("?");
@@ -139,8 +137,6 @@ public class AutomatonWindow extends JFrame {
     bottomStatePanel.add(stateValue);
     bottomStatePanel.add(previousStateText);
     bottomStatePanel.add(previousStateValue);
-    bottomStatePanel.add(nextStateText);
-    bottomStatePanel.add(nextStateValue);
     bottomStatePanel.add(statusText);
     bottomStatePanel.add(getAcceptedPanel());
     bottomPanel.add(bottomInputTapePanel);
@@ -150,7 +146,6 @@ public class AutomatonWindow extends JFrame {
     // Center part
     stackText.setBorder(BorderFactory.createLineBorder(Color.BLACK));
     stackPanelElements.add(stackText);
-    stackPanelElements.add(new CustomLabel("SSSBB", Color.RED, false));
     stackPanel.add(stackPanelElements, BorderLayout.NORTH);
     stackPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
     transitionsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -188,8 +183,46 @@ public class AutomatonWindow extends JFrame {
         String chosenOption = (String)cb.getSelectedItem();
         if(chosenOption.equals("Normal")) {
           checkButton.setText("Check");
+          automataMode = false;
         } else {
           checkButton.setText("Next step");
+          automataMode = true;
+        }
+      }
+    });
+
+    resetButton.addActionListener(new ActionListener() {
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if(automataMode) {
+          String text = getTextField().getText();
+          getAutomaton().setInputString(text);
+          accepted = getAutomaton().evaluateEntry();
+          getAcceptedPanel().setAccepted(accepted);
+          repaint();
+        } else {
+          JOptionPane.showMessageDialog(null, "ERROR: This option is only available in step-by-step mode.");
+        }
+      }
+    });
+
+    initializeButton.addActionListener(new ActionListener() {
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        if(automataMode) {
+          String text = getTextField().getText();
+          if(text.length() > 0) { 
+            getAutomaton().setInputString(text);
+            updateInputTapeValue(text);
+            stackPanelElements.add(new CustomLabel(automaton.getStartingStackSymbol(), Color.RED, false));
+            stateValue.setText(automaton.getStartingState());
+          } else {
+            JOptionPane.showMessageDialog(null, "ERROR: The Input String can't be empty!");
+          }
+        } else {
+          JOptionPane.showMessageDialog(null, "ERROR: This option is only available in step-by-step mode.");
         }
       }
     });
@@ -201,15 +234,34 @@ public class AutomatonWindow extends JFrame {
         String text = getTextField().getText();
 
         getAutomaton().setInputString(text);
-        accepted = getAutomaton().evaluateEntry();
-        getAcceptedPanel().setAccepted(accepted);
-        repaint();
+        if(automataMode) {
+          if(getAutomaton().performOneStep()) {
+            System.out.println("Test: " + getAutomaton().getStepByStepAutomaton().getActualState());
+          }
+          System.out.println("Test2: " + getAutomaton().getStepByStepAutomaton().getActualState());
+        } else {
+          accepted = getAutomaton().evaluateEntry();
+          getAcceptedPanel().setAccepted(accepted);
+          repaint();
+        }
       }
     });
+
     this.add(topPanel, BorderLayout.NORTH);
     this.add(centerPanel, BorderLayout.CENTER);
     this.add(bottomPanel, BorderLayout.SOUTH);
     setIconImage(icon.getImage());
+  }
+
+  private void updateInputTapeValue(String inputTapeValueText) {
+    String formattedText = new String("");
+    char[] charArray = inputTapeValueText.toCharArray();
+    formattedText += "<html><font color='red'>" + charArray[0] + "</font>";
+    for(int i = 1; i < charArray.length; i++) {
+      formattedText += charArray[i];
+    }
+    formattedText += "</html>";
+    inputTapeValue.setText(formattedText);
   }
 
   public PushDownAutomaton getAutomaton() {

@@ -21,8 +21,10 @@ import automatonelements.AutomatonTransitionTable;
 public class PushDownAutomaton extends Automaton {
 
 	private AutomatonAlphabet stackAlphabet;									// Alfabeto de la pila (tau).
-	private String startingStackSymbol;								// Estado inicial de la pila.
-	private AutomatonStack stack;									// Pila del automata.
+	private String startingStackSymbol;								        // Estado inicial de la pila.
+	private AutomatonStack stack;									            // Pila del automata.
+	private String[] lastSymbolsPushedToStack;
+	private PushDownAutomaton stepByStepAutomaton;
 	
 	/**
 	 * Crea un automata vacio.
@@ -35,6 +37,7 @@ public class PushDownAutomaton extends Automaton {
 		setStack(new AutomatonStack());
 		startingStackSymbol = (null);
 		setStartingState(null);
+		setStepByStepAutomaton(this);
 		
 	}
 	/**
@@ -61,11 +64,14 @@ public class PushDownAutomaton extends Automaton {
 		}
 		this.getStack().pop();
 		symbolsToPush = transitionToApply.getStackCharsToPush();
+		setLastSymbolsPushedToStack(symbolsToPush);
 		
 		this.pushSymbolsToStack(symbolsToPush);
 		
 		this.setActualState(transitionToApply.getDestinyState());
+		setStepByStepAutomaton(other);
 	}
+	
 	/**
 	 * Evalua la entrada actual.
 	 * @return True si es aceptada.
@@ -74,8 +80,6 @@ public class PushDownAutomaton extends Automaton {
 		ArrayList<String> actualStates = new ArrayList<String>();
 		ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
 		
-		
-		///actualStates = epsylonClausure(getActualState());			MAAAAL siempre se consume un simbolo de la pila.
 		actualStates.add(actualState);
 		if (entryAccepted(actualStates))
 			return true;
@@ -86,12 +90,40 @@ public class PushDownAutomaton extends Automaton {
 				PushDownAutomaton newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
 			
 				if (newAutomaton.evaluateEntry())
+				  setStepByStepAutomaton(newAutomaton);
 					return true;
 			}
 		}
 			
 		return false;
 	}
+	
+	 /**
+   * Evalua la entrada actual paso por paso.
+   * @return True si es aceptada.
+   */
+  public boolean performOneStep() {
+    ArrayList<String> actualStates = new ArrayList<String>();
+    ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
+    PushDownAutomaton newAutomaton = getStepByStepAutomaton();
+    
+    actualStates.add(actualState);
+    
+    for (int i = 0; i < actualStates.size(); i++) {
+      possibleTransitions = possibleTransitions(actualStates.get(i));
+      for (int j = 0; j < possibleTransitions.size(); j++) {
+        newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
+        
+        if (newAutomaton.evaluateEntry()) {
+          return true;
+        }
+      
+      }
+    }
+    
+    return false;
+  }
+	
 	/**
 	 * Empuja todos los simbolos a la pila.
 	 * Hay que tener cuidado con la semantica del orden en que se empujan.
@@ -234,5 +266,17 @@ public class PushDownAutomaton extends Automaton {
 	private void setStack(AutomatonStack stack) {
 		this.stack = stack;
 	}
+  public String[] getLastSymbolsPushedToStack() {
+    return lastSymbolsPushedToStack;
+  }
+  public void setLastSymbolsPushedToStack(String[] lastSymbolsPushedToStack) {
+    this.lastSymbolsPushedToStack = lastSymbolsPushedToStack;
+  }
+  public PushDownAutomaton getStepByStepAutomaton() {
+    return stepByStepAutomaton;
+  }
+  public void setStepByStepAutomaton(PushDownAutomaton stepByStepAutomaton) {
+    this.stepByStepAutomaton = stepByStepAutomaton;
+  }
 	
 }
