@@ -33,18 +33,22 @@ public class Main {
 		*/
         //try {
           //automaton = AutomatonFileHandler.parseFromFile("automaton_examples/" + args[0]);
-          frame  = new AutomatonWindow(automaton);
+          try {
+			frame  = new AutomatonWindow(automaton);
+	        frame.setTitle("Pushdown Automaton");
+	        frame.setSize(950, 650);
+	        frame.setLocationRelativeTo(null); // Center the frame
+	        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	        frame.setVisible(true);
+	        frame.setResizable(false);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
         //} /*catch (IOException | AutomatonExceptionHandler e) {
           //e.printStackTrace();
           //return;
         //}
-
-        frame.setTitle("Pushdown Automaton");
-        frame.setSize(800, 600);
-        frame.setLocationRelativeTo(null); // Center the frame
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-        frame.setResizable(false);
       }
     });
   }

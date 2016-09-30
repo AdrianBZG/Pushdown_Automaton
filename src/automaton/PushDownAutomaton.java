@@ -9,9 +9,11 @@
 
 package automaton;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import automatonelements.AutomatonAlphabet;
+import automatonelements.AutomatonCommonData;
 import automatonelements.AutomatonInputTape;
 import automatonelements.AutomatonStack;
 import automatonelements.AutomatonStateSet;
@@ -44,8 +46,9 @@ public class PushDownAutomaton extends Automaton {
 	 * y aplicandose una transicion.
 	 * @param other
 	 * @param transitionToApply
+	 * @throws IOException 
 	 */
-	public PushDownAutomaton(PushDownAutomaton other, AutomatonTransition transitionToApply) {
+	public PushDownAutomaton(PushDownAutomaton other, AutomatonTransition transitionToApply) throws IOException {
 		String readSymbol = new String();
 		String symbolsToPush[];
 
@@ -68,14 +71,22 @@ public class PushDownAutomaton extends Automaton {
 		this.pushSymbolsToStack(symbolsToPush);
 
 		this.setActualState(transitionToApply.getDestinyState());
-		System.out.println("Hey: " + getActualState());
+		
+		AutomatonCommonData.setTransitionNumber(AutomatonCommonData.getTransitionNumber() + 1);
+		if(AutomatonCommonData.getTransitionNumber() > 1) {
+			showTransitionInfo("<br><b><u>" + AutomatonCommonData.getTransitionNumber() + ".</u> CURRENT STATE:</b> " + getActualState() + "<b><br> INPUT TAPE STATUS: </b>" + getInputString() + "<b><br> STACK STATUS: </b>" + printStackElements() + "<b><br> ACTION(\u03B4): </b>" + transitionToApply);
+		} else {
+			showTransitionInfo("<b><u>" + AutomatonCommonData.getTransitionNumber() + ".</u> CURRENT STATE:</b> " + getActualState() + "<b><br> INPUT TAPE STATUS: </b>" + getInputString() + "<b><br> STACK STATUS: </b>" + printStackElements() + "<b><br> ACTION(\u03B4): </b>" + transitionToApply);
+		}
+		
 	}
 
 	/**
 	 * Evalua la entrada actual.
 	 * @return True si es aceptada.
+	 * @throws IOException 
 	 */
-	public boolean evaluateEntry() {
+	public boolean evaluateEntry() throws IOException {
 		ArrayList<String> actualStates = new ArrayList<String>();
 		ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
 		actualStates.add(actualState);
@@ -100,8 +111,9 @@ public class PushDownAutomaton extends Automaton {
 	/**
 	 * Evalua la entrada actual.
 	 * @return True si es aceptada.
+	 * @throws IOException 
 	 */
-	public void evaluateEntryOneStep() {
+	public void evaluateEntryOneStep() throws IOException {
 		ArrayList<String> actualStates = new ArrayList<String>();
 		ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
 
@@ -131,8 +143,9 @@ public class PushDownAutomaton extends Automaton {
 	/**
 	 * Evalua la entrada actual paso por paso.
 	 * @return True si es aceptada.
+	 * @throws IOException 
 	 */
-	public void performOneStep() {
+	public void performOneStep() throws IOException {
 		ArrayList<String> actualStates = new ArrayList<String>();
 		ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
 
@@ -283,6 +296,17 @@ public class PushDownAutomaton extends Automaton {
 		this.startingStackSymbol = startingStackSymbol;
 		getStack().push(startingStackSymbol);
 	}
+	
+	public String printStackElements() {
+		String resultToReturn = new String();
+		AutomatonStack newStack = (AutomatonStack)getStack().clone();
+		
+		while(!newStack.empty()) {
+			resultToReturn += newStack.pop() + " ";
+		}
+		
+		return resultToReturn;
+	}
 
 	private AutomatonStack getStack() {
 		return stack;
@@ -302,6 +326,10 @@ public class PushDownAutomaton extends Automaton {
 	}
 	public void setStepByStepAutomaton(PushDownAutomaton stepByStepAutomaton) {
 		this.stepByStepAutomaton = stepByStepAutomaton;
+	}
+	
+	private void showTransitionInfo(String info) throws IOException {
+		AutomatonWindow.appendTextToTransitionsPanel(info);
 	}
 
 }

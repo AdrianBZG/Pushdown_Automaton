@@ -61,6 +61,19 @@ public class AutomatonTransition {
 		this.stackSymbolsToPush = stackCharsToPush;
 	}
 	
+	public String toString() {
+		return new String("(" + getOriginState() + "," + getCharacterToRead() + "," + getStackCharToConsume() +
+						  ") -> (" + getDestinyState() + "," + getStackCharsToPushAsString() + ")");
+	}
+	
+	public String getStackCharsToPushAsString() {
+		String resultToReturn = new String();
+		for(String s : getStackCharsToPush()) {
+			resultToReturn += s;
+		}
+		return resultToReturn;
+	}
+	
 	
 	
 }

@@ -18,10 +18,19 @@ public class AutomatonInputTape extends AutomatonTape {
 	 */
 	public AutomatonInputTape (String input) {
 		setInputString(new ArrayList<String>());
-		
+
 		setInputString(input);
-		
+
 	}
+
+	public String toString() {
+		String resultToReturn = new String();
+		for(int i = getActualIndex(); i < getInputString().size(); i++) {
+			resultToReturn += getInputString().get(i) + " ";
+		}
+		return resultToReturn;
+	}
+
 	/**
 	 * 
 	 * @param input
@@ -38,8 +47,8 @@ public class AutomatonInputTape extends AutomatonTape {
 		return getActualIndex() == getInputString().size();
 	}
 	/**
-	 * Lee el siguiente elemento y avanza en el índice.
-	 * @return	elemento leído, null si se ha llegado al final.
+	 * Lee el siguiente elemento y avanza en el ï¿½ndice.
+	 * @return	elemento leï¿½do, null si se ha llegado al final.
 	 */
 	public String readNextElement() {
 		String result = null;
@@ -49,7 +58,7 @@ public class AutomatonInputTape extends AutomatonTape {
 		}
 		return result;
 	}
-	
+
 	public String readNextElementWithoutAdvance() {
 		String result = null;
 		if (getActualIndex() < getInputString().size()) {

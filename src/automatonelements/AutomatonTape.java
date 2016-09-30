@@ -21,6 +21,7 @@ public abstract class AutomatonTape {
   public ArrayList<String> getInputString() {
     return inputString;
   }
+  
   /**
    * @param inputString the inputString to set
    */

@@ -30,10 +30,17 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
 
 import automaton.PushDownAutomaton;
+import automatonelements.AutomatonCommonData;
 import exceptions.AutomatonExceptionHandler;
 import handlers.AutomatonFileHandler;
 
@@ -42,13 +49,16 @@ public class AutomatonWindow extends JFrame {
 	public final static ImageIcon infoIcon = new ImageIcon(INFO_ICON_PATH);
 	public final static String AUTOMATA_ICON_PATH = "res/automata-icon.png";
 	public final static ImageIcon icon = new ImageIcon(AUTOMATA_ICON_PATH);
+	public final static String TRANSITION_PANEL_HEADER_TEXT = "<html><b><u>TRANSITION LOG</u></b><br><br></html>";
+	public static JTextArea TRANSITIONS_TEXT_AREA = new JTextArea("");
 
 	public static PushDownAutomaton automaton;
 	JTextField textField;
+	static JTextPane scrollPane;
+	JScrollPane jsp;
 	JButton button;
 	JButton checkButton = new JButton("Check");
 	JButton resetButton = new JButton("Reset");
-	JButton initializeButton = new JButton("Initialize");
 	JButton chooseFileButton = new JButton("Load automata from file...");
 	JPanel panel;
 	JPanel textPanel;
@@ -60,17 +70,11 @@ public class AutomatonWindow extends JFrame {
 	JLabel loadFileLabel = new JLabel("Load File...");
 	JFileChooser jFileChooser = new JFileChooser();
 	JLabel modeLabel = new JLabel("Mode:");
-	String[] possibleModes = { "Normal", "Step by step" };
+	String[] possibleModes = { "Normal" };
 	JComboBox<String> modeComboBox = new JComboBox<String>(possibleModes);
 	JLabel inputStringLabel = new JLabel("Input String:");
 	JLabel stackText = new CustomLabel("AUTOMATON STACK", true);
-	JLabel stateText = new CustomLabel("State: ", true);
-	JLabel stateValue = new JLabel("?");
-	JLabel previousStateText = new CustomLabel("| Previous State: ", true);
-	JLabel previousStateValue = new JLabel("?");
-	JLabel statusText = new CustomLabel("| Status: ", true);
-	JLabel inputTapeText = new CustomLabel("Input tape:", true);
-	JLabel inputTapeValue = new JLabel("?");
+	JLabel statusText = new CustomLabel("Status: ", true);
 	JPanel topPanel = new JPanel(new GridLayout(1,3));
 	JPanel topInputPanel = new JPanel(new GridLayout(2,1));
 	JPanel topInputString = new JPanel(new FlowLayout());
@@ -79,24 +83,23 @@ public class AutomatonWindow extends JFrame {
 	// Bottom part (State + Previous state + Next state + Input tape)
 	JPanel bottomPanel = new JPanel(new GridLayout(2,1));
 	JPanel bottomStatePanel = new JPanel(new FlowLayout());
+	JPanel bottomStatusPanel = new JPanel(new FlowLayout());
 	JPanel bottomInputTapePanel = new JPanel(new FlowLayout());
 	//
 	// Center part (Transitions (center) + Stack (right)
 	JPanel centerPanel = new JPanel(new BorderLayout());
 	JPanel transitionsPanel = new JPanel(new GridLayout(0,1));
-	JPanel stackPanel = new JPanel(new BorderLayout());
-	JPanel stackPanelElements = new JPanel(new GridLayout(0,1));
 	//
 	AutomatonAcceptedPanel automatonAcceptedPanel;
 	Boolean accepted;
 
-	public AutomatonWindow(PushDownAutomaton automaton) {
+	public AutomatonWindow(PushDownAutomaton automaton) throws IOException {
 		setAutomaton(automaton);
 		setLayout(new BorderLayout());
 		setPanel(new JPanel(new GridLayout(2, 1)));
 		setTextPanel(new JPanel(new GridLayout(2, 1)));
 		setTextField(new JTextField());
-		getTextField().setPreferredSize( new Dimension( 60, 24 ) );
+		getTextField().setPreferredSize( new Dimension( 120, 24 ) );
 		setAcceptedPanel(new AutomatonAcceptedPanel());
 		getAcceptedPanel().setPreferredSize( new Dimension( 60, 24 ) );
 		setButton(checkButton);
@@ -128,29 +131,31 @@ public class AutomatonWindow extends JFrame {
 		//
 
 		// Bottom part
-		bottomInputTapePanel.add(inputTapeText);
-		bottomInputTapePanel.add(inputTapeValue);
 		bottomStatePanel.add(resetButton);
-		bottomStatePanel.add(initializeButton);
 		bottomStatePanel.add(getButton());
-		bottomStatePanel.add(stateText);
-		bottomStatePanel.add(stateValue);
-		bottomStatePanel.add(previousStateText);
-		bottomStatePanel.add(previousStateValue);
-		bottomStatePanel.add(statusText);
-		bottomStatePanel.add(getAcceptedPanel());
-		bottomPanel.add(bottomInputTapePanel);
+		bottomStatusPanel.add(statusText);
+		bottomStatusPanel.add(getAcceptedPanel());
 		bottomPanel.add(bottomStatePanel);
+		bottomPanel.add(bottomStatusPanel);
 		//
 
 		// Center part
-		stackText.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		stackPanelElements.add(stackText);
-		stackPanel.add(stackPanelElements, BorderLayout.NORTH);
-		stackPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		transitionsPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		centerPanel.add(transitionsPanel, BorderLayout.CENTER);
-		centerPanel.add(stackPanel, BorderLayout.EAST);
+		centerPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		scrollPane = new JTextPane();
+		scrollPane.setEditable(false);
+		scrollPane.setContentType("text/html");
+		//scrollPane.add(new JLabel(TRANSITION_PANEL_HEADER_TEXT));
+		jsp = new JScrollPane(scrollPane);
+		centerPanel.add(new JLabel(TRANSITION_PANEL_HEADER_TEXT, JLabel.CENTER), BorderLayout.NORTH);
+		centerPanel.add(jsp, BorderLayout.CENTER);
+		//scrollPane.setBounds(10,60,780,500);
+		//scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		//transitionsPanel.add(scrollPane);
+		//scrollPane.setText(TRANSITION_PANEL_HEADER_TEXT);
+		//appendTextToTransitionsPanel(TRANSITION_PANEL_HEADER_TEXT);
+		//String test = scrollPane.getText();
+		//System.out.println(test);
+		//scrollPane.setText(test);
 		//
 
 		chooseFileButton.addActionListener(new ActionListener() {
@@ -195,36 +200,9 @@ public class AutomatonWindow extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if(automataMode) {
-					String text = getTextField().getText();
-					getAutomaton().setInputString(text);
-					accepted = getAutomaton().evaluateEntry();
-					getAcceptedPanel().setAccepted(accepted);
-					repaint();
-				} else {
-					JOptionPane.showMessageDialog(null, "ERROR: This option is only available in step-by-step mode.");
-				}
-			}
-		});
-
-		initializeButton.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if(automataMode) {
-					String text = getTextField().getText();
-					if(text.length() > 0) { 
-						getAutomaton().setInputString(text);
-						updateInputTapeValue(text);
-						stackPanelElements.add(new CustomLabel(getAutomaton().getStartingStackSymbol(), Color.RED, false));
-						stateValue.setText(getAutomaton().getStartingState());
-						getAutomaton().setStepByStepAutomaton(getAutomaton());
-					} else {
-						JOptionPane.showMessageDialog(null, "ERROR: The Input String can't be empty!");
-					}
-				} else {
-					JOptionPane.showMessageDialog(null, "ERROR: This option is only available in step-by-step mode.");
-				}
+				clearTransitionsPanel();
+				getAcceptedPanel().setAccepted(null);
+				repaint();
 			}
 		});
 
@@ -235,16 +213,22 @@ public class AutomatonWindow extends JFrame {
 				String text = getTextField().getText();
 
 				getAutomaton().setInputString(text);
-				if(automataMode) {
-					//System.out.println("Broco: " + getAutomaton().getStepByStepAutomaton().getActualState());
-					getAutomaton().evaluateEntry();
-					//System.out.println("Test1234: " + getAutomaton().getActualState() + " - " + getAutomaton().getLastSymbolsPushedToStack()[0]);
-					//System.out.println("Test3: " + getAutomaton().getActualState());
-				} else {
+				try {
+					clearTransitionsPanel();
+					AutomatonCommonData.resetTransitionNumber();
 					accepted = getAutomaton().evaluateEntry();
 					getAcceptedPanel().setAccepted(accepted);
+					if(accepted) {
+						appendTextToTransitionsPanel("<br><font color=\"green\">ACCEPTED</font>");
+					} else {
+						appendTextToTransitionsPanel("<br><font color=\"red\">REJECTED</font>");
+					}
 					repaint();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
+
 			}
 		});
 
@@ -252,17 +236,6 @@ public class AutomatonWindow extends JFrame {
 		this.add(centerPanel, BorderLayout.CENTER);
 		this.add(bottomPanel, BorderLayout.SOUTH);
 		setIconImage(icon.getImage());
-	}
-
-	private void updateInputTapeValue(String inputTapeValueText) {
-		String formattedText = new String("");
-		char[] charArray = inputTapeValueText.toCharArray();
-		formattedText += "<html><font color='red'>" + charArray[0] + "</font>";
-		for(int i = 1; i < charArray.length; i++) {
-			formattedText += charArray[i];
-		}
-		formattedText += "</html>";
-		inputTapeValue.setText(formattedText);
 	}
 
 	public static PushDownAutomaton getAutomaton() {
@@ -321,5 +294,22 @@ public class AutomatonWindow extends JFrame {
 		this.accepted = accepted;
 	}
 
+	public static void appendTextToTransitionsPanel(String s) throws IOException {
+		try {
+			if(AutomatonCommonData.getTransitionNumber() > 1) {
+				HTMLDocument doc = (HTMLDocument)scrollPane.getDocument();
+				HTMLEditorKit editorKit = (HTMLEditorKit)scrollPane.getEditorKit();
+				editorKit.insertHTML(doc, doc.getLength(), s, 0, 0, null);
+			} else {	// Prevent the empty new line
+				scrollPane.setText(s);
+			}
+		} catch(BadLocationException exc) {
+			exc.printStackTrace();
+		}
+	}
+
+	private void clearTransitionsPanel() {
+		scrollPane.setText("");
+	}
 
 }
