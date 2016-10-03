@@ -45,25 +45,30 @@ public class AutomatonTransition {
 	public String getCharacterToRead() {
 		return characterToRead;
 	}
+	
 	public void setCharacterToRead(String characterToRead) {
 		this.characterToRead = characterToRead;
 	}
+	
 	public String getStackCharToConsume() {
 		return stackCharToConsume;
 	}
+	
 	public void setStackCharToConsume(String stackCharToConsume) {
 		this.stackCharToConsume = stackCharToConsume;
 	}
+	
 	public String[] getStackCharsToPush() {
 		return stackSymbolsToPush;
 	}
+	
 	public void setStackCharsToPush(String[] stackCharsToPush) {
 		this.stackSymbolsToPush = stackCharsToPush;
 	}
 	
 	public String toString() {
 		return new String("(" + getOriginState() + "," + getCharacterToRead() + "," + getStackCharToConsume() +
-						  ") -> (" + getDestinyState() + "," + getStackCharsToPushAsString() + ")");
+						          ") -> (" + getDestinyState() + "," + getStackCharsToPushAsString() + ")");
 	}
 	
 	public String getStackCharsToPushAsString() {
@@ -72,8 +77,5 @@ public class AutomatonTransition {
 			resultToReturn += s;
 		}
 		return resultToReturn;
-	}
-	
-	
-	
+	}	
 }

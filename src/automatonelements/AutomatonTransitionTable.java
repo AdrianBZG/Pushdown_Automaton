@@ -13,5 +13,5 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class AutomatonTransitionTable extends HashMap<String, ArrayList<AutomatonTransition>> {
-
+  //
 }

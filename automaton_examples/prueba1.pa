@@ -7,7 +7,7 @@ a b			# Alfabeto Sigma
 A S			# Alfabeto Tau
 p			# Estado Inicial
 S			# Simbolo Inicial de la pila
-NONE  		# Conjunto de estados finales, NONE si no los hay
+EMPTY  		# Conjunto de estados finales, NONE si no los hay
 p a S p A	# Cada una de las transiciones, una por linea
 p a A p AA
 p b A q $

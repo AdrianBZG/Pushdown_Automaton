@@ -12,5 +12,19 @@ package automatonelements;
 import java.util.ArrayList;
 
 public class AutomatonStateSet extends ArrayList<String> {
+  public String toString() {
+    String resultToReturn = new String();
 
+    for(String symbol : this) {
+      resultToReturn += symbol + " ";
+    }
+
+    if(resultToReturn.length() > 1) {
+      resultToReturn = resultToReturn.substring(0, resultToReturn.length() - 1);
+    } else {
+      resultToReturn = "EMPTY";
+    }
+
+    return resultToReturn;
+  }
 }

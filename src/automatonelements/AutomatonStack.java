@@ -12,5 +12,5 @@ package automatonelements;
 import java.util.Stack;
 
 public class AutomatonStack extends Stack<String> {
-  // Inherit method from Stack
+  // Inherit from Stack
 }

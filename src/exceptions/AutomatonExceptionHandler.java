@@ -10,10 +10,9 @@
 package exceptions;
 
 /**
- * Clase encargada de definir un error durante el parsing.
+ * Class to handle any error during the automaton execution
  */
 public class AutomatonExceptionHandler extends Exception {
-
 	public AutomatonExceptionHandler(String m) {
 		super(m);
 	}

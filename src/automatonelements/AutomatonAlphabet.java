@@ -11,42 +11,54 @@ package automatonelements;
 
 import java.util.ArrayList;
 
-import automaton.Automaton;
+import common.AutomatonCommonText;
 
 public class AutomatonAlphabet {
-	private ArrayList<String> alphabet;				// Lista de simbolos que componen el alfabeto.
-	
-	/**
-	 * Crea un alfabeto vacio.
-	 */
-	public AutomatonAlphabet(){
-		setAlphabet(new ArrayList<String>());
-	}
-	/**
-	 * Añade el elemento recibido al alfabeto.
-	 * @param element
-	 */
-	public void addElementToAlphabet(String element) {
-		if (!getAlphabet().contains(element) && !element.equals(Automaton.EPSYLON))
-			getAlphabet().add(element);
-	}
-	/**
-	 * Verifica si el elemento pertenece al alfabeto.
-	 * @param element	elemento a analizar.
-	 * @return			true si element pertenece al alfabeto.
-	 */
-	public boolean elementBelongsToAlphabet(String element){
-		return getAlphabet().contains(element) || element.equals(Automaton.EPSYLON);
-	}
-	/**
-	 * Getters y Setters.
-	 */
-	private ArrayList<String> getAlphabet() {
-		return alphabet;
-	}
+  private ArrayList<String> alphabet;				// List of symbols that compose the alphabet
 
-	private void setAlphabet(ArrayList<String> alphabet) {
-		this.alphabet = alphabet;
-	}
-	
+  /**
+   * Creates a empty alphabet
+   */
+  public AutomatonAlphabet() {
+    setAlphabet(new ArrayList<String>());
+  }
+  
+  public String toString() {
+    String resultToReturn = new String();
+    
+    for(String symbol : alphabet) {
+      resultToReturn += symbol + " ";
+    }
+    
+    resultToReturn = resultToReturn.substring(0, resultToReturn.length() - 1);
+    
+    return resultToReturn;
+  }
+
+  /**
+   * Adds an element to the alphabet
+   * @param element
+   */
+  public void addElementToAlphabet(String element) {
+    if (!getAlphabet().contains(element) && !element.equals(AutomatonCommonText.EPSYLON)) {
+      getAlphabet().add(element);
+    }
+  }
+
+  /**
+   * Verifies if an element belongs to the alphabet
+   * @param element	Element to check
+   * @return			true if the element belongs to the alphabet
+   */
+  public boolean elementBelongsToAlphabet(String element) {
+    return getAlphabet().contains(element) || element.equals(AutomatonCommonText.EPSYLON);
+  }
+
+  private ArrayList<String> getAlphabet() {
+    return alphabet;
+  }
+
+  private void setAlphabet(ArrayList<String> alphabet) {
+    this.alphabet = alphabet;
+  }	
 }

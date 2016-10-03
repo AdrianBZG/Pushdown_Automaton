@@ -12,33 +12,34 @@ package automatonelements;
 import java.util.ArrayList;
 
 public abstract class AutomatonTape {
-  private ArrayList<String> inputString;    // Cadena de entrada.
-  private int actualIndex;          // Indice actual de lectura de la entrada.
-  
+  private ArrayList<String> inputString;      // The input string for the automaton
+  private int currentIndex;                   // Current index to read from the input
+
   /**
    * @return the inputString
    */
   public ArrayList<String> getInputString() {
     return inputString;
   }
-  
+
   /**
    * @param inputString the inputString to set
    */
   public void setInputString(ArrayList<String> inputString) {
     this.inputString = inputString;
   }
+  
   /**
    * @return the actualIndex
    */
-  public int getActualIndex() {
-    return actualIndex;
+  public int getCurrentIndex() {
+    return currentIndex;
   }
+  
   /**
-   * @param actualIndex the actualIndex to set
+   * @param currentIndex the currentIndex to set
    */
-  public void setActualIndex(int actualIndex) {
-    this.actualIndex = actualIndex;
+  public void setCurrentIndex(int currentIndex) {
+    this.currentIndex = currentIndex;
   }
-
 }

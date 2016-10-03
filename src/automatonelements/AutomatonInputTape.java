@@ -12,67 +12,64 @@ package automatonelements;
 import java.util.ArrayList;
 
 public class AutomatonInputTape extends AutomatonTape {	
-	/**
-	 * Crea una cadena de entrada nueva.
-	 * @param input
-	 */
-	public AutomatonInputTape (String input) {
-		setInputString(new ArrayList<String>());
 
-		setInputString(input);
+  /**
+   * Creates a new input tape for the automaton
+   * @param input
+   */
+  public AutomatonInputTape (String input) {
+    setInputString(new ArrayList<String>());
+    setInputString(input);
+  }
 
-	}
+  public String toString() {
+    String resultToReturn = new String();
+    for(int i = getCurrentIndex(); i < getInputString().size(); i++) {
+      resultToReturn += getInputString().get(i) + " ";
+    }
+    return resultToReturn;
+  }
 
-	public String toString() {
-		String resultToReturn = new String();
-		for(int i = getActualIndex(); i < getInputString().size(); i++) {
-			resultToReturn += getInputString().get(i) + " ";
-		}
-		return resultToReturn;
-	}
+  /**
+   * @param input
+   */
+  public AutomatonInputTape(AutomatonInputTape input) {
+    setInputString(input.getInputString());
+    setCurrentIndex(input.getCurrentIndex());
+  }
 
-	/**
-	 * 
-	 * @param input
-	 */
-	public AutomatonInputTape(AutomatonInputTape input) {
-		setInputString(input.getInputString());
-		setActualIndex(input.getActualIndex());
-	}
-	/**
-	 * Verifica si se ha leido toda la cadena de entrada.
-	 * @return
-	 */
-	public boolean entryEnded() {
-		return getActualIndex() == getInputString().size();
-	}
-	/**
-	 * Lee el siguiente elemento y avanza en el �ndice.
-	 * @return	elemento le�do, null si se ha llegado al final.
-	 */
-	public String readNextElement() {
-		String result = null;
-		if (getActualIndex() < getInputString().size()) {
-			result = getInputString().get(getActualIndex());
-			setActualIndex(getActualIndex() + 1);
-		}
-		return result;
-	}
+  /**
+   * Verifies if the whole input string has been read
+   */
+  public boolean entryEnded() {
+    return getCurrentIndex() == getInputString().size();
+  }
 
-	public String readNextElementWithoutAdvance() {
-		String result = null;
-		if (getActualIndex() < getInputString().size()) {
-			result = getInputString().get(getActualIndex());
-		}
-		return result;
-	}
-	/**
-	 * Getters y Setters.
-	 * @param input
-	 */
-	public void setInputString(String input) {
-		for (int i = 0; i < input.length(); i++) 
-			getInputString().add(input.substring(i, i + 1));
-		setActualIndex(0);
-	}	
+  /**
+   * Reads the next element and moves forward the index
+   * @return	Read element or null if the index is at the end
+   */
+  public String readNextElement() {
+    String result = null;
+    if (getCurrentIndex() < getInputString().size()) {
+      result = getInputString().get(getCurrentIndex());
+      setCurrentIndex(getCurrentIndex() + 1);
+    }
+    return result;
+  }
+
+  public String readNextElementWithoutAdvance() {
+    String result = null;
+    if (getCurrentIndex() < getInputString().size()) {
+      result = getInputString().get(getCurrentIndex());
+    }
+    return result;
+  }
+
+  public void setInputString(String input) {
+    for (int i = 0; i < input.length(); i++) {
+      getInputString().add(input.substring(i, i + 1));
+    }
+    setCurrentIndex(0);
+  }	
 }
