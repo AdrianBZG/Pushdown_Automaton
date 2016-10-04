@@ -57,7 +57,7 @@ public class AutomatonWindow extends JFrame {
 	private JButton button;
 	private JButton checkButton = new JButton("Check");
 	private JButton resetButton = new JButton("Reset");
-	private JButton chooseFileButton = new JButton("Load automata from file...");
+	private JButton chooseFileButton = new JButton("Load automaton from file...");
 	private JPanel panel;
 	private JPanel textPanel;
 	private JPanel filePanel;
@@ -108,7 +108,7 @@ public class AutomatonWindow extends JFrame {
 		getAcceptedPanel().setPreferredSize( new Dimension( 60, 24 ) );
 		setButton(getCheckButton());
 		getjFileChooser().setCurrentDirectory(new File(System.getProperty("user.dir")));
-		FileNameExtensionFilter filter = new FileNameExtensionFilter("PA Pushdown Automata File", "pa");
+		FileNameExtensionFilter filter = new FileNameExtensionFilter("PA Pushdown Automaton File", "pa");
 		getjFileChooser().setFileFilter(filter);
 
 		// Top part
