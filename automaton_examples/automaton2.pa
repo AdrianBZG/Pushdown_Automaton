@@ -1,6 +1,6 @@
-# Prueba de automata no determinista
+# Non-deterministic automaton test
 
-q0 q1 q2	# Estados
+q0 q1 q2	# States
 a b			# Sigma
 A Z			# Tau
 q0			# S

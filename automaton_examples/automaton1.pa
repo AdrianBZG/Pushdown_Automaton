@@ -1,0 +1,14 @@
+# Test file
+# L = { (a^n).(b^n) / n > 0 }
+# $ means the empty symbol
+
+p q			# States of the automaton
+a b			# Sigma alphabet
+A S			# Tau alphabet
+p			# Initial state
+S			# Stack starting symbol
+EMPTY  		# Final states set, EMPTY if there arent any
+p a S p A	# Each one of the transitions, one per line
+p a A p AA
+p b A q $
+q b A q $
