@@ -23,8 +23,8 @@ public class AutomatonAcceptedPanel extends JPanel {
 
   protected void paintComponent(Graphics g) {
     super.paintComponent(g.create());
-    if (accepted != null) {
-      if (accepted) {
+    if (getAccepted() != null) {
+      if (getAccepted()) {
         g.setColor(Color.GREEN);
       } else {
         g.setColor(Color.RED);

@@ -11,6 +11,8 @@ package automatonelements;
 
 import java.util.ArrayList;
 
+import common.AutomatonCommonText;
+
 public class AutomatonStateSet extends ArrayList<String> {
   public String toString() {
     String resultToReturn = new String();
@@ -22,7 +24,7 @@ public class AutomatonStateSet extends ArrayList<String> {
     if(resultToReturn.length() > 1) {
       resultToReturn = resultToReturn.substring(0, resultToReturn.length() - 1);
     } else {
-      resultToReturn = "EMPTY";
+      resultToReturn = AutomatonCommonText.EMPTY_FINAL_STATES;
     }
 
     return resultToReturn;

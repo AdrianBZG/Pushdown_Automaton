@@ -30,8 +30,8 @@ public class FileChooserWindow extends JFrame {
     FileNameExtensionFilter filter = new FileNameExtensionFilter("PA Pushdown Automata File", "pa");
     getFileChooser().setFileFilter(filter);
     getFileChooser().setCurrentDirectory(new File(System.getProperty("user.home")));
-    getContainer().add(getFileChooser());
-    add(getContainer(), BorderLayout.CENTER);
+    getContainerElement().add(getFileChooser());
+    add(getContainerElement(), BorderLayout.CENTER);
   }
   
   private void setWindowSettings() {
@@ -42,7 +42,7 @@ public class FileChooserWindow extends JFrame {
   /**
    * @return the container
    */
-  public JPanel getContainer() {
+  public JPanel getContainerElement() {
     return container;
   }
 

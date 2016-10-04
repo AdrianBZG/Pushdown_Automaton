@@ -19,317 +19,244 @@ import automatonelements.AutomatonStateSet;
 import automatonelements.AutomatonTransition;
 import automatonelements.AutomatonTransitionTable;
 import common.AutomatonCommonData;
+import common.AutomatonCommonText;
 import gui.AutomatonWindow;
 
 public class PushDownAutomaton extends Automaton {
 
-  private AutomatonAlphabet stackAlphabet;									// Alfabeto de la pila (tau).
-  private String startingStackSymbol;								        // Estado inicial de la pila.
-  private AutomatonStack stack;									            // Pila del automata.
-  private String[] lastSymbolsPushedToStack;
-  private PushDownAutomaton stepByStepAutomaton;
+	private AutomatonAlphabet stackAlphabet;					// Tau alphabet (the stack alphabet)
+	private String initialStackSymbol;							// Stack initial symbol
+	private AutomatonStack stack;								// The automaton stack
 
-  /**
-   * Crea un automata vacio.
-   */
-  public PushDownAutomaton() {
-    setAutomaton(new AutomatonTransitionTable());
-    setFinalStates(new AutomatonStateSet());
-    setInputStringAlphabet(new AutomatonAlphabet());
-    setStackAlphabet(new AutomatonAlphabet());
-    setStack(new AutomatonStack());
-    startingStackSymbol = (null);
-    setStartingState(null);
-  }
-  /**
-   * Crea un automata copiando las referencias del que se le pasa por parametro
-   * y aplicandose una transicion.
-   * @param other
-   * @param transitionToApply
-   * @throws IOException 
-   */
-  public PushDownAutomaton(PushDownAutomaton other, AutomatonTransition transitionToApply) throws IOException {
-    String readSymbol = new String();
-    String symbolsToPush[];
+	/**
+	 * Creates an empty automaton
+	 */
+	public PushDownAutomaton() {
+		setAutomaton(new AutomatonTransitionTable());
+		setFinalStates(new AutomatonStateSet());
+		setInputStringAlphabet(new AutomatonAlphabet());
+		setStackAlphabet(new AutomatonAlphabet());
+		setStack(new AutomatonStack());
+		setInitialStackSymbol(null);
+		setStartingState(null);
+	}
 
-    this.setAutomaton(other.getAutomaton());
-    this.setFinalStates(other.getFinalStates());
-    this.setInputString(new AutomatonInputTape(other.getInputString()));
-    this.setStackAlphabet(other.getStackAlphabet());
-    this.startingStackSymbol = (other.getStartingStackSymbol());
-    this.startingState = (other.getStartingState());
-    this.setStack((AutomatonStack)other.getStack().clone());					/// Verificar si el clone esta realmente implementado.
-    this.setInputStringAlphabet(other.getInputStringAlphabet());
+	/**
+	 * Creates an empty automaton copying the references from the one that is passed through parameter
+	 * and applying one transition
+	 * @param other
+	 * @param transitionToApply
+	 * @throws IOException 
+	 */
+	public PushDownAutomaton(PushDownAutomaton other, AutomatonTransition transitionToApply) throws IOException {
+		String symbolsToPush[];
 
-    if (!transitionToApply.getCharacterToRead().equals(EPSYLON)) {
-      readSymbol = this.getInputString().readNextElement();
-    }
-    this.getStack().pop();
-    symbolsToPush = transitionToApply.getStackCharsToPush();
-    setLastSymbolsPushedToStack(symbolsToPush);
+		setAutomaton(other.getAutomaton());
+		setFinalStates(other.getFinalStates());
+		setInputString(new AutomatonInputTape(other.getInputString()));
+		setStackAlphabet(other.getStackAlphabet());
+		setInitialStackSymbol(other.getStartingStackSymbol());
+		setStartingState(other.getStartingState());
+		setStack((AutomatonStack)other.getStack().clone());
+		setInputStringAlphabet(other.getInputStringAlphabet());
 
-    this.pushSymbolsToStack(symbolsToPush);
+		if (!transitionToApply.getCharacterToRead().equals(AutomatonCommonText.EPSYLON)) {
+			getInputString().readNextElement();
+		}
+		getStack().pop();
+		symbolsToPush = transitionToApply.getStackCharsToPush();
 
-    this.setCurrentState(transitionToApply.getDestinyState());
+		pushSymbolsToStack(symbolsToPush);
 
-    AutomatonCommonData.setTransitionNumber(AutomatonCommonData.getTransitionNumber() + 1);
-    if(AutomatonCommonData.getTransitionNumber() > 1) {
-      showTransitionInfo("<br><b><u>" + AutomatonCommonData.getTransitionNumber() + ".</u> CURRENT STATE:</b> " + getActualState() + "<b><br> INPUT TAPE STATUS: </b>" + getInputString() + "<b><br> STACK STATUS: </b>" + printStackElements() + "<b><br> ACTION(\u03B4): </b>" + transitionToApply);
-    } else {
-      showTransitionInfo("<b><u>" + AutomatonCommonData.getTransitionNumber() + ".</u> CURRENT STATE:</b> " + getActualState() + "<b><br> INPUT TAPE STATUS: </b>" + getInputString() + "<b><br> STACK STATUS: </b>" + printStackElements() + "<b><br> ACTION(\u03B4): </b>" + transitionToApply);
-    }
+		setCurrentState(transitionToApply.getDestinyState());
 
-  }
+		updateTransitionInformation(transitionToApply);
+	}
 
-  /**
-   * Evalua la entrada actual.
-   * @return True si es aceptada.
-   * @throws IOException 
-   */
-  public boolean evaluateEntry() throws IOException {
-    ArrayList<String> actualStates = new ArrayList<String>();
-    ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
-    actualStates.add(actualState);
+	private void updateTransitionInformation(AutomatonTransition transitionToApply) throws IOException {
+		AutomatonCommonData.setTransitionNumber(AutomatonCommonData.getTransitionNumber() + 1);
+		if(AutomatonCommonData.getTransitionNumber() > 1) {
+			showTransitionInfo("<br><b><u>" + AutomatonCommonData.getTransitionNumber() + ".</u> CURRENT STATE:</b> " + getCurrentState() + "<b><br> INPUT TAPE STATUS: </b>" + getInputString() + "<b><br> STACK STATUS: </b>" + printStackElements() + "<b><br> ACTION(\u03B4): </b>" + transitionToApply);
+		} else {
+			showTransitionInfo("<b><u>" + AutomatonCommonData.getTransitionNumber() + ".</u> CURRENT STATE:</b> " + getCurrentState() + "<b><br> INPUT TAPE STATUS: </b>" + getInputString() + "<b><br> STACK STATUS: </b>" + printStackElements() + "<b><br> ACTION(\u03B4): </b>" + transitionToApply);
+		}
+	}
 
-    if (entryAccepted(actualStates)) {
-      return true;
-    }
+	/**
+	 * Evaluates the current input
+	 * @return True if the input is accepted
+	 * @throws IOException 
+	 */
+	public boolean evaluateEntry() throws IOException {
+		ArrayList<String> actualStates = new ArrayList<String>();
+		ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
+		actualStates.add(getCurrentState());
 
-    for (int i = 0; i < actualStates.size(); i++) {
-      possibleTransitions = possibleTransitions(actualStates.get(i));
-      for (int j = 0; j < possibleTransitions.size(); j++){
-        PushDownAutomaton newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
-        if (newAutomaton.evaluateEntry()) {
-          return true;
-        }
-      }
-    }
+		if (entryAccepted(actualStates)) {
+			return true;
+		}
 
-    return false;
-  }
+		for (int i = 0; i < actualStates.size(); i++) {
+			possibleTransitions = possibleTransitions(actualStates.get(i));
+			for (int j = 0; j < possibleTransitions.size(); j++) {
+				PushDownAutomaton newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
+				if (newAutomaton.evaluateEntry()) {
+					return true;
+				}
+			}
+		}
 
-  /**
-   * Evalua la entrada actual.
-   * @return True si es aceptada.
-   * @throws IOException 
-   */
-  public void evaluateEntryOneStep() throws IOException {
-    ArrayList<String> actualStates = new ArrayList<String>();
-    ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
+		return false;
+	}
 
-    actualStates.add(AutomatonWindow.getAutomaton().actualState);
-    if (entryAccepted(actualStates))
-      System.out.println("Cuidadin");
+	/**
+	 * Pushes all symbols to the stack
+	 * @param symbols
+	 */
+	private void pushSymbolsToStack(String symbols[]) {
+		for(int i = symbols.length - 1; i >= 0; i--) {
+			if (!symbols[i].equals(AutomatonCommonText.EPSYLON)) {
+				this.getStack().push(symbols[i]);
+			}
+		}
+	}
 
-    for (int i = 0; i < actualStates.size(); i++) {
-      possibleTransitions = AutomatonWindow.getAutomaton().possibleTransitions(actualStates.get(i));
-      //System.out.println(possibleTransitions);
-      for (int j = 0; j < possibleTransitions.size(); j++){
-        PushDownAutomaton newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
-        //stepForward(AutomatonWindow.getAutomaton(), possibleTransitions.get(j));
-        //setStepByStepAutomaton(newAutomaton);
-        AutomatonWindow.setAutomaton(newAutomaton);
-        if (newAutomaton.evaluateEntry()) {	
-          System.out.println("evaluateEntryOneStep()");
-          System.out.println("TestTost: " + AutomatonWindow.getAutomaton().getActualState());	
-          System.out.println("TestTust: " + newAutomaton.getActualState());
-        }
-      }
-    }
-    //System.out.println("Mal");
-    //return new PushDownAutomaton();
-  }
+	/**
+	 * Checks if the input can be accepted in the current automaton state
+	 * @param actualStates
+	 * @return
+	 */
+	private boolean entryAccepted(ArrayList<String> actualStates) {
+		if (getInputString().entryEnded()) {
+			if (getFinalStates().isEmpty()) {
+				return getStack().isEmpty();
+			} else {
+				for (int i = 0; i < actualStates.size(); i++) {
+					if (getFinalStates().contains(actualStates.get(i))) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
-  /**
-   * Evalua la entrada actual paso por paso.
-   * @return True si es aceptada.
-   * @throws IOException 
-   */
-  public void performOneStep() throws IOException {
-    ArrayList<String> actualStates = new ArrayList<String>();
-    ArrayList<AutomatonTransition> possibleTransitions = new ArrayList<AutomatonTransition>();
+	/**
+	 * Retrieves the list of possible transitions from a certain state
+	 * @param state
+	 * @return
+	 */
+	private ArrayList<AutomatonTransition> possibleTransitions(String state) {
+		ArrayList<AutomatonTransition> result = new ArrayList<AutomatonTransition>();
 
-    actualStates.add(actualState);
+		if (!getStack().isEmpty()) {
+			for (int i = 0; i < getAutomaton().get(state).size(); i++) {
+				if (getAutomaton().get(state).get(i).getCharacterToRead().equals(AutomatonCommonText.EPSYLON) || 
+						getAutomaton().get(state).get(i).getCharacterToRead().equals(getInputString().readNextElementWithoutAdvance())) {
+					if (getAutomaton().get(state).get(i).getStackCharToConsume().equals(getStack().peek())) {
+						result.add(getAutomaton().get(state).get(i));
+					}
+				}
+			}
+		}
+		return result;
+	}
 
-    for (int i = 0; i < actualStates.size(); i++) {
-      possibleTransitions = possibleTransitions(actualStates.get(i));
-      for (int j = 0; j < possibleTransitions.size(); j++) {
-        PushDownAutomaton newAutomaton = new PushDownAutomaton(this, possibleTransitions.get(j));
-        //AutomatonWindow.setAutomaton(newAutomaton.evaluateEntryOneStep());
-        System.out.println("Test4: " + newAutomaton.getActualState());
+	/**
+	 * Adds a new element to the Tau alphabet
+	 * @param newElement
+	 */
+	public void addElementToStackAlphabet(String newElement) {
+		if (getStackAlphabet().elementBelongsToAlphabet(newElement)) {
+			throw new IllegalArgumentException(AutomatonCommonText.THE_ELEMENT_TEXT + newElement + AutomatonCommonText.ALREADY_BELONGS_TO_TAU);
+		} else {
+			getStackAlphabet().addElementToAlphabet(newElement);
+		}
+	}
 
-      }
-    }
-  }
+	/**
+	 * Adds a new transition to the automaton
+	 * @param origin
+	 * @param entryToConsume
+	 * @param stackSymbolToConsume
+	 * @param destiny
+	 * @param symbolsToPush
+	 * @throws IllegalArgumentException
+	 */
+	public void addTransition(String origin, String entryToConsume, String stackSymbolToConsume, String destiny, String symbolsToPush) throws IllegalArgumentException {
+		checkForTransitionErrors(origin, destiny, entryToConsume, stackSymbolToConsume, symbolsToPush);
+		getAutomaton().get(origin).add(new AutomatonTransition(origin, destiny, entryToConsume, stackSymbolToConsume, symbolsToPush.split("")));
+	}
 
-  /**
-   * Empuja todos los simbolos a la pila.
-   * Hay que tener cuidado con la semantica del orden en que se empujan.
-   * @param symbols
-   */
-  private void pushSymbolsToStack(String symbols[]) {
-    for(int i = symbols.length - 1; i >= 0; i--) {
-      if (!symbols[i].equals(EPSYLON))
-        this.getStack().push(symbols[i]);		
-    }
-  }
-  /**
-   * Devuelve true si en el estado en el que esta
-   * se puede dar por aceptada la entrada.
-   * @param actualStates
-   * @return
-   */
-  private boolean entryAccepted(ArrayList<String> actualStates) {
-    if (getInputString().entryEnded()) {
-      if (getFinalStates().isEmpty())
-        return getStack().isEmpty();
-      else {
-        for (int i = 0; i < actualStates.size(); i++)
-          if (getFinalStates().contains(actualStates.get(i)))
-            return true;
-      }
-    }
-    return false;
-  }
-  /**
-   * Devuelve la lista de posibles transiciones
-   * para un determinado estado.
-   * @param state
-   * @return
-   */
-  private ArrayList<AutomatonTransition> possibleTransitions(String state) {
-    ArrayList<AutomatonTransition> result = new ArrayList<AutomatonTransition>();
+	private void checkForTransitionErrors(String origin, String destiny, String entryToConsume, String stackSymbolToConsume, String symbolsToPush) {
+		if (!stateExist(origin)) {
+			throw new IllegalArgumentException(AutomatonCommonText.THE_ELEMENT_TEXT + origin + AutomatonCommonText.NOT_BELONGS_TO_STATE_SET);
+		}
+		
+		if (!stateExist(destiny)) {
+			throw new IllegalArgumentException(AutomatonCommonText.THE_ELEMENT_TEXT + destiny + AutomatonCommonText.NOT_BELONGS_TO_STATE_SET);
+		}
+		
+		if (!getInputStringAlphabet().elementBelongsToAlphabet(entryToConsume)) {
+			throw new IllegalArgumentException(AutomatonCommonText.THE_ELEMENT_TEXT + entryToConsume + AutomatonCommonText.NOT_BELONGS_TO_SIGMA_ALPHABET);
+		}
+		
+		if (!getStackAlphabet().elementBelongsToAlphabet(stackSymbolToConsume)) {
+			throw new IllegalArgumentException(AutomatonCommonText.THE_ELEMENT_TEXT + stackSymbolToConsume + AutomatonCommonText.NOT_BELONGS_TO_TAU_ALPHABET);
+		}
 
-    if (!getStack().isEmpty()) {
-      for (int i = 0; i < getAutomaton().get(state).size(); i++) {
-        if (getAutomaton().get(state).get(i).getCharacterToRead().equals(EPSYLON) || 
-            getAutomaton().get(state).get(i).getCharacterToRead().equals(getInputString().readNextElementWithoutAdvance()))
-          if (getAutomaton().get(state).get(i).getStackCharToConsume().equals(getStack().peek()))
-            result.add(getAutomaton().get(state).get(i));
-      }
-    }
-    return result;
-  }
+		for (int i = 0; i < symbolsToPush.length(); i++) {
+			if(!getStackAlphabet().elementBelongsToAlphabet(symbolsToPush.substring(i, i + 1))) {
+				throw new IllegalArgumentException(AutomatonCommonText.THE_ELEMENT_TEXT + symbolsToPush.substring(i, i + 1) + AutomatonCommonText.NOT_BELONGS_TO_TAU_ALPHABET);	
+			}
+		}
+	}
 
-  /**
-   * Calcula la epsylon clausura de un estado.
-   * @param Actualstate
-   * @return
-   */
-  private ArrayList<String> epsylonClausure(String Actualstate) {
-    ArrayList<String> result = new ArrayList<String>();
-    ArrayList<String> aux = new ArrayList<String>();
-    String state = null;
+	public AutomatonAlphabet getStackAlphabet() {
+		return stackAlphabet;
+	}
 
-    aux.add(Actualstate);
+	private void setStackAlphabet(AutomatonAlphabet stackAlphabet) {
+		this.stackAlphabet = stackAlphabet;
+	}
 
-    while (!aux.isEmpty()) {
-      state = aux.get(0);
-      aux.remove(0);
+	public String getStartingStackSymbol() {
+		return initialStackSymbol;
+	}
 
-      for (int i = 0; i < getAutomaton().get(state).size(); i++) 
-        if (getAutomaton().get(state).get(i).getCharacterToRead().equals(EPSYLON) && 
-            getAutomaton().get(state).get(i).getStackCharToConsume().equals(getStack().peek())) {
-          if (!result.contains(getAutomaton().get(state).get(i).getDestinyState()))
-            aux.add(getAutomaton().get(state).get(i).getDestinyState());
+	public void setStartingStackSymbol(String startingStackSymbol) {
+		this.initialStackSymbol = startingStackSymbol;
+		getStack().push(startingStackSymbol);
+	}
 
-        }
+	public String printStackElements() {
+		String resultToReturn = new String();
+		AutomatonStack newStack = (AutomatonStack)getStack().clone();
 
-      result.add(state);
-    }
+		while(!newStack.empty()) {
+			resultToReturn += newStack.pop() + " ";
+		}
 
-    return result;
-  }
+		return resultToReturn;
+	}
 
-  /**
-   * Aade un nuevo elemento al alfabeto tau.
-   * @param newElement
-   */
-  public void addElementToStackAlphabet(String newElement) {
-    if (getStackAlphabet().elementBelongsToAlphabet(newElement))
-      throw new IllegalArgumentException("El elemento " + newElement + " ya forma parte del alfabeto de la pila.");
-    else
-      getStackAlphabet().addElementToAlphabet(newElement);
-  }
+	private AutomatonStack getStack() {
+		return stack;
+	}
 
-  /**
-   * Aade una nueva transicion.
-   * @param origin
-   * @param entryToConsume
-   * @param stackSymbolToConsume
-   * @param destiny
-   * @param symbolsToPush
-   * @throws IllegalArgumentException
-   */
-  public void addTransition(String origin, String entryToConsume, String stackSymbolToConsume, String destiny, String symbolsToPush)throws IllegalArgumentException {
-    if (!stateExist(origin))
-      throw new IllegalArgumentException("El elemento " + origin + " no forma parte del conjunto de estados.");
-    if (!stateExist(destiny))
-      throw new IllegalArgumentException("El elemento " + destiny + " no forma parte del conjunto de estados.");
-    if (!getInputStringAlphabet().elementBelongsToAlphabet(entryToConsume))
-      throw new IllegalArgumentException("El elemento " + entryToConsume + " no forma parte del alfabeto de entrada.");
-    if (!getStackAlphabet().elementBelongsToAlphabet(stackSymbolToConsume))
-      throw new IllegalArgumentException("El elemento " + stackSymbolToConsume + " no forma parte del alfabeto de la pila.");
+	private void setStack(AutomatonStack stack) {
+		this.stack = stack;
+	}
 
-    for (int i = 0; i < symbolsToPush.length(); i++) {
-      if(!getStackAlphabet().elementBelongsToAlphabet(symbolsToPush.substring(i, i + 1)))
-        throw new IllegalArgumentException("El elemento " + symbolsToPush.substring(i, i + 1) + " no forma parte del alfabeto de la pila.");	
-    }
+	private void showTransitionInfo(String info) throws IOException {
+		AutomatonWindow.appendTextToTransitionsPanel(info);
+	}
 
-    getAutomaton().get(origin).add(new AutomatonTransition(origin, destiny, entryToConsume, stackSymbolToConsume, symbolsToPush.split("")));
-  }
+	public String getInitialStackSymbol() {
+		return initialStackSymbol;
+	}
 
-
-  private AutomatonAlphabet getStackAlphabet() {
-    return stackAlphabet;
-  }
-
-  private void setStackAlphabet(AutomatonAlphabet stackAlphabet) {
-    this.stackAlphabet = stackAlphabet;
-  }
-
-  public String getStartingStackSymbol() {
-    return startingStackSymbol;
-  }
-
-  public void setStartingStackSymbol(String startingStackSymbol) {
-    this.startingStackSymbol = startingStackSymbol;
-    getStack().push(startingStackSymbol);
-  }
-
-  public String printStackElements() {
-    String resultToReturn = new String();
-    AutomatonStack newStack = (AutomatonStack)getStack().clone();
-
-    while(!newStack.empty()) {
-      resultToReturn += newStack.pop() + " ";
-    }
-
-    return resultToReturn;
-  }
-
-  private AutomatonStack getStack() {
-    return stack;
-  }
-
-  private void setStack(AutomatonStack stack) {
-    this.stack = stack;
-  }
-  public String[] getLastSymbolsPushedToStack() {
-    return lastSymbolsPushedToStack;
-  }
-  public void setLastSymbolsPushedToStack(String[] lastSymbolsPushedToStack) {
-    this.lastSymbolsPushedToStack = lastSymbolsPushedToStack;
-  }
-  public PushDownAutomaton getStepByStepAutomaton() {
-    return stepByStepAutomaton;
-  }
-  public void setStepByStepAutomaton(PushDownAutomaton stepByStepAutomaton) {
-    this.stepByStepAutomaton = stepByStepAutomaton;
-  }
-
-  private void showTransitionInfo(String info) throws IOException {
-    AutomatonWindow.appendTextToTransitionsPanel(info);
-  }
-
+	public void setInitialStackSymbol(String initialStackSymbol) {
+		this.initialStackSymbol = initialStackSymbol;
+	}
 }
