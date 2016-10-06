@@ -55,9 +55,9 @@ public class AutomatonWindow extends JFrame {
 	private static JTextPane scrollPane;
 	private JScrollPane jsp;
 	private JButton button;
-	private JButton checkButton = new JButton("Check");
-	private JButton resetButton = new JButton("Reset");
-	private JButton chooseFileButton = new JButton("Load automaton from file...");
+	private JButton checkButton = new JButton(AutomatonCommonText.CHECK_BUTTON_TEXT);
+	private JButton resetButton = new JButton(AutomatonCommonText.RESET_BUTTON_TEXT);
+	private JButton chooseFileButton = new JButton(AutomatonCommonText.LOAD_AUTOMATON_FROM_FILE_TEXT);
 	private JPanel panel;
 	private JPanel textPanel;
 	private JPanel filePanel;
@@ -65,11 +65,11 @@ public class AutomatonWindow extends JFrame {
 	private JPanel inputPanel;
 	private JLabel infoLabel;                               // The label for the information icon
 	private JFileChooser jFileChooser = new JFileChooser();
-	private JLabel modeLabel = new JLabel("Mode:");
-	private String[] possibleModes = { "Normal" };
+	private JLabel modeLabel = new JLabel(AutomatonCommonText.MODE_TEXT);
+	private String[] possibleModes = { AutomatonCommonText.NORMAL_MODE_TEXT };
 	private JComboBox<String> modeComboBox = new JComboBox<String>(possibleModes);
-	private JLabel inputStringLabel = new JLabel("Input String:");
-	private JLabel statusText = new CustomLabel("Status: ", true);
+	private JLabel inputStringLabel = new JLabel(AutomatonCommonText.INPUT_STRING_TEXT);
+	private JLabel statusText = new CustomLabel(AutomatonCommonText.STATUS_TEXT, true);
 	private JPanel firstTopPanel = new JPanel(new GridLayout(1,4));
 	private JPanel secondTopPanel = new JPanel(new GridLayout(1,0));
 	private JPanel topPanel = new JPanel(new BorderLayout());
@@ -78,11 +78,11 @@ public class AutomatonWindow extends JFrame {
 	private JPanel topModePanel = new JPanel(new FlowLayout());
 	private JPanel topChooseFilePanel = new JPanel(new FlowLayout());
 	private JPanel automatonInfoPanel = new JPanel(new FlowLayout());
-	private JLabel epsilonTextValue = new JLabel("?");
-	private JLabel tauTextValue = new JLabel("?");
-	private JLabel automatonInitialStateTextValue = new JLabel("?");
-	private JLabel automatonFinalStateTextValue = new JLabel("?");
-	private JLabel automatonTypeTextValue = new JLabel("?");
+	private JLabel epsilonTextValue = new JLabel(AutomatonCommonText.INTERROGATION_MARK);
+	private JLabel tauTextValue = new JLabel(AutomatonCommonText.INTERROGATION_MARK);
+	private JLabel automatonInitialStateTextValue = new JLabel(AutomatonCommonText.INTERROGATION_MARK);
+	private JLabel automatonFinalStateTextValue = new JLabel(AutomatonCommonText.INTERROGATION_MARK);
+	private JLabel automatonTypeTextValue = new JLabel(AutomatonCommonText.INTERROGATION_MARK);
 
 	// Bottom part
 	private JPanel bottomPanel = new JPanel(new GridLayout(2,1));
@@ -203,10 +203,10 @@ public class AutomatonWindow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				JComboBox<String> cb = (JComboBox<String>)e.getSource();
 				String chosenOption = (String)cb.getSelectedItem();
-				if(chosenOption.equals("Normal")) {
-					getCheckButton().setText("Check");
+				if(chosenOption.equals(AutomatonCommonText.NORMAL_MODE_TEXT)) {
+					getCheckButton().setText(AutomatonCommonText.CHECK_BUTTON_TEXT);
 				} else {
-					getCheckButton().setText("Other option");
+					getCheckButton().setText(AutomatonCommonText.OTHER_OPTION_TEXT);
 				}
 			}
 		});
@@ -229,7 +229,7 @@ public class AutomatonWindow extends JFrame {
 					clearTransitionsPanel();
 					AutomatonCommonData.resetTransitionNumber();
 					setAccepted(getAutomaton().evaluateEntry());
-					getAcceptedPanel().setAccepted(accepted);
+					getAcceptedPanel().setAccepted(getAccepted());
 					if(getAccepted()) {
 						appendTextToTransitionsPanel(AutomatonCommonText.ACCEPTED_TEXT);
 					} else {
